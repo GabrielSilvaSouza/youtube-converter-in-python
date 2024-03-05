@@ -1,6 +1,26 @@
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
-from conversor import *
+from pytube import YouTube
+from moviepy.editor import AudioFileClip
+import os
+
+def download_video(url, filepath):
+    yt = YouTube(url, on_progress_callback=progress_callback)
+    video = yt.streams.get_highest_resolution()
+    video.download(f'{filepath}')
+    return video.default_filename
+
+def progress_callback(stream, chunk, bytes_remaining):
+    total_size = stream.filesize
+    bytes_downloaded = total_size - bytes_remaining
+    percentage_of_completion = bytes_downloaded / total_size * 100
+    progress_bar['value'] = percentage_of_completion
+    root.update_idletasks() 
+
+def convert_to_mp3(video_name, filepath):
+    video = AudioFileClip(f'{filepath}/{video_name}')
+    video.write_audiofile(f'{filepath}/{video_name[:-4]}.mp3')
+    return video_name[:-4]
 
 def assembling():
     try:
@@ -8,6 +28,8 @@ def assembling():
         audio_name = convert_to_mp3(video_name, filepath.get())
         os.remove(f'{filepath.get()}/{video_name}')
         show_message("Conversão concluída com sucesso!")
+        progress_bar['value'] = 0  # Reset the progress bar
+        root.update_idletasks()  # Update the GUI
         return audio_name
     except ValueError as e:
         show_message(f"Erro: {str(e)}")
@@ -64,3 +86,7 @@ style = ttk.Style()
 style.configure('My.TButton', background='#28a745', borderwidth=0, lightcolor='#28a745', darkcolor='#28a745')  # Cor de fundo menos transparente
 
 root.mainloop()
+
+
+
+
