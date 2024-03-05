@@ -1,2 +1,5 @@
-# youtube-converter-in-python
-An .exe to convert videos form youtube into .mp3 or .mp4
+# Youtube to MP3
+
+A brief script with an interface to convert youtube videos into .mp3.
+
+
