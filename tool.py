@@ -41,7 +41,7 @@ class App(tk.Frame):
         self.tutorial_label = Label(self, text=self.tutorial_text, justify='left', wraplength=400)
         self.tutorial_label.grid(column=3, row=2, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
 
-        self.label_path = Label(self, textvariable=self.filepath)
+        self.label_path = Label(self, textvariable=self.filepath).grid(column=1, row=5, columnspan=2, sticky=(W, E), padx=10, pady=5)
 
         style.configure('My.TButton', foreground='green', background='white')
 
@@ -55,6 +55,8 @@ class App(tk.Frame):
         total_size = stream.filesize
         bytes_downloaded = total_size - bytes_remaining
         percentage_of_completion = bytes_downloaded / total_size * 100
+        self.progress_bar['value'] = percentage_of_completion
+        self.update_idletasks()
 
     def convert_to_mp3(self, video_name, filepath):
         video = AudioFileClip(f'{filepath}/{video_name}')
