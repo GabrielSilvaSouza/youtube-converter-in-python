@@ -3,11 +3,14 @@ from tkinter import ttk, filedialog, messagebox
 from pytube import YouTube
 from moviepy.editor import AudioFileClip
 import os
+import tkinter as tk
 
-class App(ttk.Frame):
+class App(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
+        self.master.title("Youtube Converter")
+        self.master.geometry("800x250")
         self.create_widgets()
         self.grid()
 
@@ -16,24 +19,31 @@ class App(ttk.Frame):
         self.filepath = StringVar()
         style = ttk.Style()
 
-        #copy code from another taB
-        self.url_entry = ttk.Entry(self, width=50, textvariable=self.url)
-        self.url_entry.grid(row=0, column=0, columnspan=3, padx=5, pady=5, sticky=(N, E, S, W))
+        self.creditos_texto = 'Desenvolvido por: Bergs'
+        self.creditos_label = Label(self, text=self.creditos_texto, justify='left', wraplength=400)
+        self.creditos_label.grid(column=3, row=7, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
+
+
+        self.url_entry = ttk.Entry(self, width=50, textvariable=self.url, justify='center')
+        self.url_entry.grid(column=1, row=2, columnspan=2, sticky=(W, E), padx=10, pady=5)
+        ttk.Label(self, text="Link do Vídeo").grid(column=1, row=1, sticky=(W, E), padx=10)
 
         self.select_folder_button = ttk.Button(self, text="Selecione a Pasta", command=self.select_folder)
-        self.select_folder_button.grid(row=0, column=3, padx=5, pady=5, sticky=(N, E, S, W))
+        self.select_folder_button.grid(column=1, row=4, columnspan=2, sticky=(W, E), padx=10, pady=5)
 
         self.convert_button = ttk.Button(self, text="Converter", command=self.assembling)
-        self.convert_button.grid(row=1, column=0, columnspan=4, padx=5, pady=5, sticky=(N, E, S, W))
-
-        style.configure('My.TButton', foreground='green', background='white')
+        self.convert_button.grid(column=1, row=6, columnspan=2, sticky=(W, E), padx=10, pady=5)
 
         self.progress_bar = ttk.Progressbar(self, orient=HORIZONTAL, length=100, mode='determinate')
-        self.progress_bar.grid(row=2, column=0, columnspan=4, padx=5, pady=5, sticky=(N, E, S, W))
+        self.progress_bar.grid(column=1, row=7, columnspan=2, sticky=(W, E), padx=10, pady=5)
 
         self.tutorial_text = "Bem-vindo ao Youtube Converter!\n\nPara começar, cole o link do vídeo do YouTube no campo ao lado esquerdo. Em seguida, clique em 'Selecione a Pasta' para escolher onde salvar o arquivo de áudio convertido. Por fim, clique em 'Converter'."
         self.tutorial_label = Label(self, text=self.tutorial_text, justify='left', wraplength=400)
-        self.tutorial_label.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky=(N, E, S, W))
+        self.tutorial_label.grid(column=3, row=2, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
+
+        self.label_path = Label(self, textvariable=self.filepath)
+
+        style.configure('My.TButton', foreground='green', background='white')
 
     def download_video(self, url, filepath):
         yt = YouTube(url, on_progress_callback=self.progress_callback)
