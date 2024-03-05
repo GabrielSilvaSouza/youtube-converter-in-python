@@ -21,6 +21,7 @@ def baixar_video_instagram():
         # Verificar se há vídeos na postagem
         if post.typename == "GraphVideo":
             # Baixar o vídeo
+
             loader.download_post(post, target=f'{nome_arquivo}', post_filter=lambda post: post.typename == "GraphVideo")
             messagebox.showinfo("Sucesso", f"Download concluído. Arquivo de vídeo salvo como: {nome_arquivo}")
         else:
