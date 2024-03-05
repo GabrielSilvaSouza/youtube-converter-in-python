@@ -3,90 +3,91 @@ from tkinter import ttk, filedialog, messagebox
 from pytube import YouTube
 from moviepy.editor import AudioFileClip
 import os
+import tkinter as tk
 
-def download_video(url, filepath):
-    yt = YouTube(url, on_progress_callback=progress_callback)
-    video = yt.streams.get_highest_resolution()
-    video.download(f'{filepath}')
-    return video.default_filename
+class App(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.master.title("Youtube Converter")
+        self.master.geometry("800x250")
+        self.create_widgets()
+        self.grid()
 
-def progress_callback(stream, chunk, bytes_remaining):
-    total_size = stream.filesize
-    bytes_downloaded = total_size - bytes_remaining
-    percentage_of_completion = bytes_downloaded / total_size * 100
-    progress_bar['value'] = percentage_of_completion
-    root.update_idletasks() 
+    def create_widgets(self):
+        self.url = StringVar()
+        self.filepath = StringVar()
+        style = ttk.Style()
 
-def convert_to_mp3(video_name, filepath):
-    video = AudioFileClip(f'{filepath}/{video_name}')
-    video.write_audiofile(f'{filepath}/{video_name[:-4]}.mp3')
-    return video_name[:-4]
+        self.creditos_texto = 'Desenvolvido por: Bergs'
+        self.creditos_label = Label(self, text=self.creditos_texto, justify='left', wraplength=400)
+        self.creditos_label.grid(column=3, row=7, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
 
-def assembling():
-    try:
-        video_name = download_video(url.get(), filepath.get())
-        audio_name = convert_to_mp3(video_name, filepath.get())
-        os.remove(f'{filepath.get()}/{video_name}')
-        show_message("Conversão concluída com sucesso!")
-        progress_bar['value'] = 0  # Reset the progress bar
-        root.update_idletasks()  # Update the GUI
-        return audio_name
-    except ValueError as e:
-        show_message(f"Erro: {str(e)}")
 
-def select_folder():
-    root.folder_selected = filedialog.askdirectory()
-    filepath.set(root.folder_selected)
+        self.url_entry = ttk.Entry(self, width=50, textvariable=self.url, justify='center')
+        self.url_entry.grid(column=1, row=2, columnspan=2, sticky=(W, E), padx=10, pady=5)
+        ttk.Label(self, text="Link do Vídeo").grid(column=1, row=1, sticky=(W, E), padx=10)
 
-def show_message(message):
-    messagebox.showinfo("Youtube Converter", message)
+        self.select_folder_button = ttk.Button(self, text="Selecione a Pasta", command=self.select_folder)
+        self.select_folder_button.grid(column=1, row=4, columnspan=2, sticky=(W, E), padx=10, pady=5)
 
-def update_progress(progress):
-    progress_bar['value'] = progress
+        self.convert_button = ttk.Button(self, text="Converter", command=self.assembling)
+        self.convert_button.grid(column=1, row=6, columnspan=2, sticky=(W, E), padx=10, pady=5)
+
+        self.progress_bar = ttk.Progressbar(self, orient=HORIZONTAL, length=100, mode='determinate')
+        self.progress_bar.grid(column=1, row=7, columnspan=2, sticky=(W, E), padx=10, pady=5)
+
+        self.tutorial_text = "Bem-vindo ao Youtube Converter!\n\nPara começar, cole o link do vídeo do YouTube no campo ao lado esquerdo. Em seguida, clique em 'Selecione a Pasta' para escolher onde salvar o arquivo de áudio convertido. Por fim, clique em 'Converter'."
+        self.tutorial_label = Label(self, text=self.tutorial_text, justify='left', wraplength=400)
+        self.tutorial_label.grid(column=3, row=2, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
+
+        self.label_path = Label(self, textvariable=self.filepath).grid(column=1, row=5, columnspan=2, sticky=(W, E), padx=10, pady=5)
+
+        style.configure('My.TButton', foreground='green', background='white')
+
+    def download_video(self, url, filepath):
+        yt = YouTube(url, on_progress_callback=self.progress_callback)
+        video = yt.streams.get_highest_resolution()
+        video.download(f'{filepath}')
+        return video.default_filename
+
+    def progress_callback(self, stream, chunk, bytes_remaining):
+        total_size = stream.filesize
+        bytes_downloaded = total_size - bytes_remaining
+        percentage_of_completion = bytes_downloaded / total_size * 100
+        self.progress_bar['value'] = percentage_of_completion
+        self.update_idletasks()
+
+    def convert_to_mp3(self, video_name, filepath):
+        video = AudioFileClip(f'{filepath}/{video_name}')
+        video.write_audiofile(f'{filepath}/{video_name[:-4]}.mp3')
+        return video_name[:-4]
+    
+    def assembling(self):
+        try:
+            video_name = self.download_video(self.url.get(), self.filepath.get())
+            audio_name = self.convert_to_mp3(video_name, self.filepath.get())
+            os.remove(f'{self.filepath.get()}/{video_name}')
+            self.show_message("Conversão concluída com sucesso!")
+            self.progress_bar['value'] = 0  
+            self.update_idletasks() 
+            return audio_name
+        except ValueError as e:
+            self.show_message(f"Erro: {str(e)}")
+
+    def select_folder(self):
+        self.folder_selected = filedialog.askdirectory()
+        self.filepath.set(self.folder_selected)
+
+    def show_message(self, message):
+        messagebox.showinfo("Youtube Converter", message)
+
+    def update_progress(self, progress):
+        self.progress_bar['value'] = progress
 
 root = Tk()
-root.title("Youtube Converter")
-
-mainframe = ttk.Frame(root, padding="20")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
-
-# Adicionando um texto de tutorial
-tutorial_text = "Bem-vindo ao Youtube Converter!\n\nPara começar, cole o link do vídeo do YouTube no campo ao lado esquerdo. Em seguida, clique em 'Selecione a Pasta' para escolher onde salvar o arquivo de áudio convertido. Por fim, clique em 'Converter'."
-tutorial_label = Label(mainframe, text=tutorial_text, justify='left', wraplength=400)
-tutorial_label.grid(column=3, row=2, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
-
-# Adicionando os créditos
-creditos_texto = "Desenvolvido por: Bergs"
-creditos_label = Label(mainframe, text=creditos_texto, justify='left', font=('Helvetica', 12, 'bold'))
-creditos_label.grid(column=3, row=7, padx=10, pady=10, sticky=(N, E))
-
-url = StringVar()
-link_entry = ttk.Entry(mainframe, width=50, textvariable=url, justify='center')
-link_entry.grid(column=1, row=2, columnspan=2, sticky=(W, E), padx=10, pady=5)
-ttk.Label(mainframe, text="Link do Vídeo").grid(column=1, row=1, sticky=(W, E), padx=10)
-
-button = Button(mainframe, text="Selecione a Pasta", command=select_folder, bg="#007bff", fg="white")
-button.grid(column=1, row=4, columnspan=2, sticky=(W, E), padx=10, pady=5)
-
-filepath = StringVar()
-label_path = Label(mainframe, textvariable=filepath).grid(column=1, row=5, columnspan=2, sticky=(W, E), padx=10, pady=5)
-
-convert_button = ttk.Button(mainframe, text='Converter', command=assembling, style='My.TButton')
-convert_button.grid(column=1, row=6, columnspan=2, sticky=(W, E), padx=10, pady=5)
-
-# Barra de progresso
-progress_bar = ttk.Progressbar(mainframe, orient='horizontal', mode='determinate', length=200)
-progress_bar.grid(column=1, row=7, columnspan=2, sticky=(W, E), padx=10, pady=5)
-
-# Estilo personalizado para o botão de conversão
-style = ttk.Style()
-style.configure('My.TButton', background='#28a745', borderwidth=0, lightcolor='#28a745', darkcolor='#28a745')  # Cor de fundo menos transparente
-
-root.mainloop()
-
-
-
-
+icon_path = os.path.join(os.getcwd(), 'img', 'icon.ico')
+root.iconbitmap(icon_path)
+myapp = App(root)
+myapp.mainloop()
+    
