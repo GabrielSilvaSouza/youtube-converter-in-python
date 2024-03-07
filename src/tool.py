@@ -17,12 +17,12 @@ class App(tk.Frame):
     def create_widgets(self):
         self.url = StringVar()
         self.filepath = StringVar()
+        self.selection = StringVar()
         style = ttk.Style()
 
         self.creditos_texto = 'Desenvolvido por: Bergs'
         self.creditos_label = Label(self, text=self.creditos_texto, justify='left', wraplength=400)
-        self.creditos_label.grid(column=3, row=7, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
-
+        self.creditos_label.grid(column=3, row=9, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
 
         self.url_entry = ttk.Entry(self, width=50, textvariable=self.url, justify='center')
         self.url_entry.grid(column=1, row=2, columnspan=2, sticky=(W, E), padx=10, pady=5)
@@ -39,9 +39,12 @@ class App(tk.Frame):
 
         self.tutorial_text = "Bem-vindo ao Youtube Converter!\n\nPara começar, cole o link do vídeo do YouTube no campo ao lado esquerdo. Em seguida, clique em 'Selecione a Pasta' para escolher onde salvar o arquivo de áudio convertido. Por fim, clique em 'Converter'."
         self.tutorial_label = Label(self, text=self.tutorial_text, justify='left', wraplength=400)
-        self.tutorial_label.grid(column=3, row=2, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
+        self.tutorial_label.grid(column=3, row=4, rowspan=4, padx=10, pady=10, sticky=(N, E, S, W))
 
         self.label_path = Label(self, textvariable=self.filepath).grid(column=1, row=5, columnspan=2, sticky=(W, E), padx=10, pady=5)
+
+        ttk.Radiobutton(self, text="MP3", variable=self.selection, value="MP3").grid(column=3, row=2, padx=10, pady=5, sticky=W)
+        ttk.Radiobutton(self, text="MP4", variable=self.selection, value="MP4").grid(column=3, row=3, padx=10, pady=5, sticky=W)
 
         style.configure('My.TButton', foreground='green', background='white')
 
@@ -66,12 +69,16 @@ class App(tk.Frame):
     def assembling(self):
         try:
             video_name = self.download_video(self.url.get(), self.filepath.get())
-            audio_name = self.convert_to_mp3(video_name, self.filepath.get())
-            os.remove(f'{self.filepath.get()}/{video_name}')
-            self.show_message("Conversão concluída com sucesso!")
+            if self.selection.get() == "MP3":
+                audio_name = self.convert_to_mp3(video_name, self.filepath.get())
+                os.remove(f'{self.filepath.get()}/{video_name}')
+                self.show_message("Conversão concluída com sucesso!")
+            elif self.selection.get() == "MP4":
+                self.show_message("Conversão para MP4 selecionada")
+            else:
+                self.show_message("Selecione uma opção de conversão")
             self.progress_bar['value'] = 0  
             self.update_idletasks() 
-            return audio_name
         except ValueError as e:
             self.show_message(f"Erro: {str(e)}")
 
@@ -90,4 +97,3 @@ icon_path = os.path.join(os.getcwd(), 'img', 'icon.ico')
 root.iconbitmap(icon_path)
 myapp = App(root)
 myapp.mainloop()
-    
